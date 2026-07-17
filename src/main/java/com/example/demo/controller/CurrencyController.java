@@ -3,14 +3,10 @@ package com.example.demo.controller;
 import com.example.demo.dto.ConvertRequest;
 import com.example.demo.dto.ConvertResponse;
 import com.example.demo.dto.ExchangeRateResponse;
-import com.example.demo.logging.LoggingMarker;
 import com.example.demo.service.CurrencyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.MarkerManager;
-import org.slf4j.Marker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +46,6 @@ public class CurrencyController {
     public ConvertResponse getSpecificRate(
             @PathVariable String from,
             @PathVariable String to) {
-        log.info((Marker) LoggingMarker.BUSINESS, "Get curren");
         return currencyService.getSpecificRate(from, to);
     }
 
