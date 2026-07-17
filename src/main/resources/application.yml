@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: currency-converter
+
+frankfurter:
+  url: https://api.frankfurter.dev/v1
