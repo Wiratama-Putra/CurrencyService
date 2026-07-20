@@ -1,330 +1,348 @@
-# 💱 Currency Converter API
+# Currency Converter API
 
-REST API sederhana yang dibangun menggunakan **Spring Boot** untuk melakukan konversi mata uang secara real-time menggunakan **Frankfurter API**.
-
-Project ini dibuat sebagai latihan membangun aplikasi backend dengan standar enterprise, meliputi:
-
-- REST API
-- Layered Architecture
-- DTO Pattern
-- Exception Handling
-- Validation
-- External API Integration
-- Logging menggunakan Log4j2
-- Standard Response
-- Clean Code
-
----
-
-# Technology Stack
-
-| Technology | Version |
-|------------|----------|
-| Java | 17 |
-| Spring Boot | 3.x |
-| Maven | 3.9+ |
-| Spring Web | Latest |
-| Spring Validation | Latest |
-| Log4j2 | Latest |
-| Lombok | Latest |
-| Frankfurter API | https://frankfurter.dev |
+A RESTful Currency Converter API built with **Spring Boot 3**, secured using **JWT Authentication**, integrated with the **Frankfurter Exchange Rate API**, and implemented with **enterprise-style logging using Log4j2**.
 
 ---
 
 # Features
 
-## Currency
-
-- Get all supported currencies
-- Get latest exchange rates
-- Get specific exchange rate
-- Convert currency
-- Get historical exchange rates
+* JWT Authentication (Bearer Token)
+* Login Endpoint
+* Get Supported Currencies
+* Get Latest Exchange Rates
+* Get Historical Exchange Rates
+* Get Exchange Rate Between Two Currencies
+* Currency Conversion
+* Global Exception Handling
+* Request Validation
+* Enterprise Logging (Log4j2 XML Configuration)
+* Request ID & Trace ID Support
+* REST Client Integration
+* Layered Architecture
+* No Database Required (In-Memory User)
 
 ---
 
-# Architecture
+# Technology Stack
 
-```
-Client
-   │
-   ▼
-Controller
-   │
-   ▼
-Service
-   │
-   ▼
-Frankfurter Client
-   │
-   ▼
-Frankfurter API
-```
+| Technology        | Version |
+| ----------------- | ------- |
+| Java              | 17      |
+| Spring Boot       | 3.5.x   |
+| Spring Security   | 6.x     |
+| Spring Validation | Latest  |
+| Log4j2            | Latest  |
+| JWT (JJWT)        | 0.12.x  |
+| Lombok            | Latest  |
+| Maven             | Latest  |
 
 ---
 
 # Project Structure
 
 ```
-src
-├── controller
-│      CurrencyController
-│
-├── service
-│      CurrencyService
-│
-├── client
-│      FrankfurterClient
-│
-├── dto
-│      ConvertRequest
-│      ConvertResponse
-│      ExchangeRateResponse
-│
-├── config
-│      RestClientConfig
-│      LogConfig
-│
-├── exception
-│      CurrencyNotFoundException
-│      GlobalExceptionHandler
-│
-├── logging
-│      LoggingMarker
-│      LoggingUtil
-│      LoggingAspect
-│
-└── CurrencyApplication
+src/main/java
+└── com.example.demo
+    ├── controller
+    │   ├── AuthController
+    │   └── CurrencyController
+    │
+    ├── service
+    │   └── CurrencyService
+    │
+    ├── client
+    │   └── FrankfurterClient
+    │
+    ├── dto
+    │   ├── LoginRequest
+    │   ├── LoginResponse
+    │   ├── ConvertRequest
+    │   ├── ConvertResponse
+    │   └── ExchangeRateResponse
+    │
+    ├── security
+    │   ├── config
+    │   │   ├── SecurityConfig
+    │   │   └── JwtAuthenticationEntryPoint
+    │   │
+    │   ├── filter
+    │   │   └── JwtAuthenticationFilter
+    │   │
+    │   ├── service
+    │   │   ├── JwtService
+    │   │   ├── AuthService
+    │   │   └── UserService
+    │   │
+    │   ├── model
+    │   │   └── UserPrincipal
+    │   │
+    │   └── constant
+    │       └── SecurityConstants
+    │
+    ├── config
+    ├── exception
+    ├── logging
+    └── DemoApplication
 ```
 
 ---
 
-# API Endpoint
+# Authentication
 
-## 1. Get Supported Currency
+This API uses **JWT Bearer Token Authentication**.
 
-### Request
+Only the login endpoint is publicly accessible.
+
+```
+POST /api/auth/login
+```
+
+All other endpoints require:
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# Default User
+
+| Username | Password |
+| -------- | -------- |
+| admin    | admin123 |
+
+The project currently uses an in-memory user. No database is required.
+
+---
+
+# API Endpoints
+
+## Login
+
+```
+POST /api/auth/login
+```
+
+Request
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Response
+
+```json
+{
+  "accessToken": "<jwt-token>",
+  "tokenType": "Bearer",
+  "expiresIn": 3600
+}
+```
+
+---
+
+## Get Supported Currencies
 
 ```
 GET /api/currencies
 ```
 
-### Response
+Authorization
 
-```json
-{
-    "USD": "United States Dollar",
-    "EUR": "Euro",
-    "IDR": "Indonesian Rupiah"
-}
+```
+Bearer Token
 ```
 
 ---
 
-## 2. Get Latest Rate
-
-### Request
+## Get Latest Exchange Rates
 
 ```
 GET /api/rates?base=USD
 ```
 
-### Response
-
-```json
-{
-    "base": "USD",
-    "date": "2026-07-17",
-    "rates": {
-        "IDR": 16352.17,
-        "JPY": 149.32
-    }
-}
-```
-
 ---
 
-## 3. Get Specific Rate
-
-### Request
+## Get Specific Exchange Rate
 
 ```
 GET /api/rates/USD/IDR
 ```
 
-### Response
-
-```json
-{
-    "amount":1,
-    "from":"USD",
-    "to":"IDR",
-    "rate":16352.17,
-    "result":16352.17
-}
-```
-
 ---
 
-## 4. Convert Currency
-
-### Request
+## Convert Currency
 
 ```
 POST /api/convert
 ```
 
-Body
+Request
 
 ```json
 {
-    "amount":100,
-    "from":"USD",
-    "to":"IDR"
-}
-```
-
-### Response
-
-```json
-{
-    "amount":100,
-    "from":"USD",
-    "to":"IDR",
-    "rate":16352.17,
-    "result":1635217
+  "amount": 100,
+  "from": "USD",
+  "to": "IDR"
 }
 ```
 
 ---
 
-## 5. Historical Rate
-
-### Request
+## Historical Exchange Rate
 
 ```
-GET /api/history?date=2025-12-01&base=USD
-```
-
-### Response
-
-```json
-{
-    "base":"USD",
-    "date":"2025-12-01",
-    "rates":{
-        "IDR":16180.75
-    }
-}
+GET /api/history?date=2025-07-01&base=USD
 ```
 
 ---
 
-# Validation
+# Security Flow
 
-Convert Request
-
-| Field | Validation |
-|---------|------------|
-| amount | Required |
-| from | Required |
-| to | Required |
-
-Example Error
-
-```json
-{
-    "timestamp":"2026-07-17T09:00:00",
-    "status":400,
-    "message":"Amount must be greater than zero"
-}
 ```
+Client
 
----
+    │
 
-# Exception Handling
+POST /api/auth/login
 
-Global Exception Handler
+    │
 
-Supported Exception
+AuthenticationManager
 
-- CurrencyNotFoundException
-- MethodArgumentNotValidException
-- Exception
+    │
 
-Example
+UserService
 
-```json
-{
-    "timestamp":"2026-07-17T09:00:00",
-    "status":404,
-    "message":"Exchange rate not found"
-}
+    │
+
+Password Validation
+
+    │
+
+JwtService
+
+    │
+
+Generate JWT
+
+    │
+
+Client receives Token
+
+    │
+
+Authorization: Bearer <token>
+
+    │
+
+JwtAuthenticationFilter
+
+    │
+
+Validate Token
+
+    │
+
+SecurityContext
+
+    │
+
+Controller
 ```
 
 ---
 
 # Logging
 
-Logging menggunakan Log4j2.
+The application uses **Log4j2** with XML configuration.
 
-Kategori log:
+Features:
 
-- REQUEST
-- RESPONSE
-- BUSINESS
-- PERFORMANCE
-- ERROR
+* Console Logging
+* Rolling File Logging
+* Trace ID
+* Request ID
+* Request Logging
+* Response Logging
+* Error Logging
+* Service Logging
+* External API Logging
 
-Contoh log:
+Example
 
 ```
-REQUEST
-POST /api/convert
+2026-07-17 14:50:20.469
 
-BUSINESS
-Convert USD to IDR
+traceId=123456
 
-PERFORMANCE
-Execution Time : 120 ms
+requestId=987654
 
-RESPONSE
-Status : SUCCESS
+INFO
 
-ERROR
-Currency not found
+CurrencyService
+
+Currency conversion success
+
+USD -> IDR
 ```
+
+---
+
+# Exception Handling
+
+Handled exceptions include:
+
+* Currency Not Found
+* Invalid Request
+* JWT Expired
+* Invalid JWT
+* Authentication Failed
+* Validation Error
+* Internal Server Error
 
 ---
 
 # External API
 
-Project menggunakan Frankfurter API.
+Exchange rates are retrieved from the Frankfurter API.
 
-Documentation
-
-https://frankfurter.dev/docs
-
-Example
+Base URL
 
 ```
-GET https://api.frankfurter.dev/latest?base=USD
+https://api.frankfurter.dev/v1
 ```
 
 ---
 
-# Run Project
+# Configuration
 
-Clone repository
+application.yml
+
+```yaml
+spring:
+  application:
+    name: currency-converter
+
+frankfurter:
+  url: https://api.frankfurter.dev/v1
+
+jwt:
+  secret: YOUR_SECRET_KEY
+  expiration: 3600000
+```
+
+---
+
+# Running the Project
+
+Clone
 
 ```
-git clone https://github.com/your-username/currency-converter.git
-```
-
-Masuk ke project
-
-```
-cd currency-converter
+git clone <repository-url>
 ```
 
 Build
@@ -339,96 +357,48 @@ Run
 mvn spring-boot:run
 ```
 
-Application
+Or
 
 ```
-http://localhost:8080
+Run DemoApplication.java
 ```
 
 ---
 
 # Testing
 
-## Get Currency
+### Login
 
 ```
-curl http://localhost:8080/api/currencies
+POST /api/auth/login
 ```
 
----
+Copy the returned JWT.
 
-## Latest Rate
-
-```
-curl "http://localhost:8080/api/rates?base=USD"
-```
-
----
-
-## Specific Rate
+Use it on every secured endpoint.
 
 ```
-curl http://localhost:8080/api/rates/USD/IDR
-```
-
----
-
-## Convert
-
-```
-curl --location 'http://localhost:8080/api/convert' \
---header 'Content-Type: application/json' \
---data '{
-    "amount":100,
-    "from":"USD",
-    "to":"IDR"
-}'
-```
-
----
-
-## Historical
-
-```
-curl "http://localhost:8080/api/history?date=2025-01-01&base=USD"
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 ---
 
 # Future Improvements
 
-- Swagger / OpenAPI
-- Unit Test
-- Integration Test
-- Docker
-- Redis Cache
-- Database (PostgreSQL)
-- Exchange Rate History
-- Favorite Currency
-- Currency Calculator
-- Scheduled Exchange Rate Sync
-- JWT Authentication
-- API Rate Limiter
-- Micrometer Monitoring
-- Prometheus
-- Grafana Dashboard
-
----
-
-# Design Principles
-
-- SOLID Principles
-- Clean Code
-- Layered Architecture
-- DTO Pattern
-- Exception Handling
-- Constructor Injection
-- Validation
-- Centralized Logging
-- Enterprise Coding Standard
+* Refresh Token
+* User Registration
+* Database Authentication (MySQL/PostgreSQL)
+* Role Based Access Control (RBAC)
+* Docker Support
+* Swagger/OpenAPI
+* Unit Test & Integration Test
+* Redis Token Blacklist
+* OAuth2 Login
+* Rate Limiting
+* Micrometer & Prometheus Metrics
 
 ---
 
 # Author
 
-Developed using Java & Spring Boot as a backend practice project following enterprise application architecture and best practices.
+Developed using Spring Boot with a clean layered architecture following enterprise backend development practices.
