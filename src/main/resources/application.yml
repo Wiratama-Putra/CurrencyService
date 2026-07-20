@@ -4,3 +4,7 @@ spring:
 
 frankfurter:
   url: https://api.frankfurter.dev/v1
+
+jwt:
+  secret: 12345678901234567890123456789012345678901234567890
+  expiration: 3600000
